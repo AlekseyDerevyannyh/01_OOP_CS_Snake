@@ -1,4 +1,5 @@
-﻿Console.Clear();
+using static System.Console;
+Clear();
 
 Point p1 = new Point();
 p1.x = 1;
@@ -18,7 +19,7 @@ class Point {
 	public char sym;
 
 	public void Draw() {
-		Console.SetCursorPosition(x, y);
-		Console.Write(sym);
+		SetCursorPosition(x, y);
+		Write(sym);
 	}
 }
