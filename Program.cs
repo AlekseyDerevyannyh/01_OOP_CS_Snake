@@ -11,22 +11,54 @@ HorizontalLine upLine = new HorizontalLine(0, 78, 0, '+');
 HorizontalLine downLine = new HorizontalLine(0, 78, 24, '+');
 VerticalLine leftLine = new VerticalLine(0, 24, 0, '+');
 VerticalLine rightLine = new VerticalLine(0, 24, 78, '+');
-upLine.Drow();
-downLine.Drow();
-leftLine.Drow();
-rightLine.Drow();
+upLine.Draw();
+downLine.Draw();
+leftLine.Draw();
+rightLine.Draw();
 
 Point p = new Point(4, 5, '*');
 Snake snake = new Snake(p, 4, Direction.RIGHT);
-snake.Drow();
+snake.Draw();
+
+FoodCreator foodCreator = new FoodCreator(80, 25, '$');
+Point food = foodCreator.CreateFood();
+food.Draw();
+
 
 while(true) {
+	if (snake.Eat(food)) {
+		food = foodCreator.CreateFood();
+		food.Draw();
+	} else {
+		snake.Move();
+	}
+	
+	Thread.Sleep(100);
+
 	if (KeyAvailable) {
 		ConsoleKeyInfo key = ReadKey();
 		snake.HadleKey(key.Key);
 	}
-	Thread.Sleep(100);
-	snake.Move();
+}
+
+
+class FoodCreator {
+	int mapWidth;
+	int mapHeight;
+	char sym;
+
+	Random random = new Random();
+
+	public FoodCreator (int mapWidth, int mapHeight, char sym) {
+		this.mapWidth = mapWidth;
+		this.mapHeight = mapHeight;
+		this.sym = sym;
+	}
+	public Point CreateFood () {
+		int x = random.Next(2, mapWidth - 2);
+		int y = random.Next(2, mapHeight - 2);
+		return new Point(x, y, sym);
+	}
 }
 
 class Point {
@@ -36,10 +68,10 @@ class Point {
 
 	public Point () {
 	}
-	public Point (int _x, int _y, char _sym) {
-		x = _x;
-		y = _y;
-		sym = _sym;
+	public Point (int x, int y, char sym) {
+		this.x = x;
+		this.y = y;
+		this.sym = sym;
 	}
 	public Point (Point p) {
 		x = p.x;
@@ -52,6 +84,9 @@ class Point {
 		else if (direction == Direction.UP)		y -= offset;
 		else									y += offset;
 	}
+	public bool IsHit (Point p) {
+		return p.x == this.x && p.y == this.y;
+	}
 	public void Draw() {
 		SetCursorPosition(x, y);
 		Write(sym);
@@ -59,6 +94,10 @@ class Point {
 	public void Clear() {
 		sym = ' ';
 		Draw();
+	}
+	public override string ToString()
+	{
+		return x + ", " + y + ", " + sym;
 	}
 }
 
@@ -79,7 +118,6 @@ class VerticalLine : Figure {
 			Point p = new Point(x, y, sym);
 			pList.Add(p);
 		}
-
 	}
 }
 
@@ -115,11 +153,19 @@ class Snake : Figure {
 		else if (key == ConsoleKey.DownArrow)	direction = Direction.DOWN;
 		else if (key == ConsoleKey.UpArrow)		direction = Direction.UP;
 	}
+	internal bool Eat (Point food) {
+		Point head = GetNextPoint();
+		if (head.IsHit(food)) {
+			food.sym = head.sym;
+			pList.Add(food);
+			return true;
+		} else		return false;
+	}
 }
 
 class Figure {
 	protected List<Point> pList;
-	public void Drow () {
+	public void Draw () {
 		foreach(Point p in pList) {
 			p.Draw();
 		}
